@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/worker.css">
+    <link rel="icon" href="images/logo.png">
+    <title>Кабинет рабочего</title>
+</head>
+<body class="body body--worker">
+<div class="worker">
+    <div class="worker__background"></div>
+    <div class="worker__container">
+        <header class="worker__header">
+            <div class="worker__header-content">
+                <h1 class="worker__title">Мой кабинет</h1>
+                <button class="worker__logout" id="logoutButton">Выход</button>
+            </div>
+        </header>
+        <main class="worker__main">
+            <section class="tasks-section">
+                <h2 class="tasks-section__title">Ваши задачи</h2>
+                <div class="tasks-section__list" id="tasksList">
+                    <div class="tasks-section__empty">Нет активных задач</div>
+                </div>
+                <button class="tasks-section__button" id="finishTaskButton">Выполнить задачу</button>
+            </section>
+        </main>
+    </div>
+</div>
+<script src="scripts/workerScript.js"></script>
+</body>
+</html>

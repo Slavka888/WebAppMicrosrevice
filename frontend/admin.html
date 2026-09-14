@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <link rel="icon" href="images/logo.png">
+    <title>Панель администратора</title>
+</head>
+<body class="body body--admin">
+<div class="admin">
+    <div class="admin__background"></div>
+    <div class="admin__container">
+        <header class="admin__header">
+            <div class="admin__header-content">
+                <h1 class="admin__title">Панель администратора</h1>
+                <button class="admin__logout" id="logoutButton">Выход</button>
+            </div>
+        </header>
+        <main class="admin__main">
+            <section class="admin__section admin__section--tasks">
+                <h2 class="admin__section-title">Создать задачу</h2>
+                <form class="task-form">
+                    <select class="task-form__select" id="workerSelect">
+                        <option value="">Выберите работника</option>
+                    </select>
+                    <textarea
+                            class="task-form__textarea"
+                            id="taskInput"
+                            placeholder="Введите описание задачи..."
+                            required
+                    ></textarea>
+                    <button type="button" class="task-form__button" id="sendTaskButton">Отправить задачу</button>
+                </form>
+            </section>
+
+            <section class="admin__section admin__section--workers">
+                <h2 class="admin__section-title">Управление работниками</h2>
+                <div class="workers-manage">
+                    <select class="workers-manage__select" id="workerSelectDelete">
+                        <option value="">Выберите работника</option>
+                    </select>
+                    <button class="workers-manage__button workers-manage__button--delete" id="deleteWorkerButton">
+                        Удалить работника
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<script src="scripts/adminScript.js"></script>
+</body>
+</html>

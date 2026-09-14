@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="icon" href="images/logo.png">
+    <title>Регистрация</title>
+</head>
+<body class="body body--auth">
+<div class="auth">
+    <div class="auth__background"></div>
+    <div class="auth__container">
+        <header class="auth__header">
+            <h1 class="auth__title">Регистрация</h1>
+        </header>
+        <main class="auth__main">
+            <form class="auth-form" id="registrationForm">
+                <div class="auth-form__group">
+                    <label class="auth-form__label" for="email">Email</label>
+                    <input
+                            class="auth-form__input"
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="example@gmail.com"
+                            required
+                    >
+                    <span class="auth-form__error" id="emailError"></span>
+                </div>
+
+                <div class="auth-form__group">
+                    <label class="auth-form__label" for="password">Пароль</label>
+                    <input
+                            class="auth-form__input"
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="••••••••"
+                            required
+                    >
+                    <span class="auth-form__error" id="passwordError"></span>
+                </div>
+
+                <button type="submit" class="auth-form__button">Зарегистрироваться</button>
+
+                <div class="auth-form__footer">
+                    <p class="auth-form__text">Уже есть аккаунт? <a href="index.html" class="auth-form__link">Войти</a></p>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+<script src="scripts/registrationScript.js"></script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+.admin {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../images/forotherpages.jpg') center / cover no-repeat;
+    opacity: 0.08;
+    z-index: -1;
+}
+
+.admin__container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.admin__header {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-white);
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    box-shadow: var(--shadow-md);
+}
+
+.admin__header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.admin__title {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    color: var(--color-white);
+}
+
+.admin__logout {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--color-white);
+    border: 2px solid var(--color-white);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin__logout:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.admin__main {
+    flex: 1;
+    display: flex;
+    gap: var(--spacing-2xl);
+    padding: var(--spacing-2xl);
+    overflow-y: auto;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.admin__section {
+    flex: 1;
+    background-color: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    min-height: 400px;
+}
+
+.admin__section--tasks {
+    flex: 1.2;
+}
+
+.admin__section--workers {
+    flex: 0.8;
+}
+
+.admin__section-title {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: var(--spacing-md);
+}
+
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    flex: 1;
+}
+
+.task-form__select {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    background-color: var(--color-white);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.task-form__select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.task-form__textarea {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 250px;
+    background-color: var(--color-white);
+    color: var(--color-text);
+    transition: all var(--transition-fast);
+}
+
+.task-form__textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.task-form__textarea::placeholder {
+    color: var(--color-text-lighter);
+}
+
+.task-form__button {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-end;
+}
+
+.task-form__button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.task-form__button:active {
+    transform: translateY(0);
+}
+
+/* ===========================
+   УПРАВЛЕНИЕ РАБОТНИКАМИ
+   =========================== */
+
+.workers-manage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    flex: 1;
+    justify-content: space-between;
+}
+
+.workers-manage__select {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    background-color: var(--color-white);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.workers-manage__select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.workers-manage__button {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.workers-manage__button--delete {
+    background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-dark) 100%);
+    color: var(--color-white);
+}
+
+.workers-manage__button--delete:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.workers-manage__button--delete:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+    .admin__main {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+
+    .admin__section {
+        min-height: 350px;
+    }
+
+    .task-form__textarea {
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin__header-content {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+    }
+
+    .admin__title {
+        font-size: var(--font-size-xl);
+    }
+
+    .admin__logout {
+        width: 100%;
+    }
+
+    .admin__main {
+        padding: var(--spacing-lg);
+        gap: var(--spacing-lg);
+    }
+
+    .admin__section {
+        padding: var(--spacing-lg);
+        min-height: 300px;
+    }
+
+    .task-form__button {
+        align-self: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin__container {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .admin__header {
+        padding: var(--spacing-md);
+    }
+
+    .admin__title {
+        font-size: var(--font-size-lg);
+    }
+
+    .admin__main {
+        padding: var(--spacing-md);
+    }
+
+    .admin__section {
+        padding: var(--spacing-md);
+    }
+
+    .admin__section-title {
+        font-size: var(--font-size-base);
+    }
+
+    .task-form__textarea {
+        min-height: 150px;
+    }
+}
