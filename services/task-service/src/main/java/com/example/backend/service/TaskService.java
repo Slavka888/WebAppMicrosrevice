@@ -1,6 +1,5 @@
 package com.example.backend.service;
 
-import com.example.backend.DTO.TaskRequestDTO;
 import com.example.backend.entity.Task;
 import com.example.backend.entity.TaskStatus;
 import com.example.backend.event.TaskEventPublisher;
