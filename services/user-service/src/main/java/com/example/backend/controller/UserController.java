@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,13 +17,15 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${admin.email}")
-    private String adminPassword;
+    private String adminEmail;
 
     @Autowired
-    public UserController(UserService userService, NewTopic userEventsTopic) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/workers")
@@ -34,7 +37,7 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> registerUser(@RequestBody UserRequestDTO user) {
         User newUser = User.builder()
                 .email(user.getEmail())
-                .password(user.getPassword())
+                .password(passwordEncoder.encode(user.getPassword()))
                 .build();
         try {
             userService.register(newUser);
@@ -44,7 +47,10 @@ public class UserController {
                             .build()
             );
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.ok(UserResponseDTO.builder()
+                    .message(e.getMessage())
+                    .build()
+            );
         }
     }
 
@@ -52,7 +58,7 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> loginUser(@RequestBody UserRequestDTO user) {
         String email = user.getEmail();
         if (userService.authenticate(email, user.getPassword())) {
-            boolean admin = adminPassword.equals(email);
+            boolean admin = adminEmail.equals(email);
             return ResponseEntity.ok(
                     UserResponseDTO.builder()
                         .message(admin ? "Logged in Successfully! You are administrator" : "Logged in successfully! You are user")

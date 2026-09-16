@@ -13,7 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @SpringBootApplication
 public class UserServiceApplication {
 	@Value("${admin.email}")
-	public String ADMIN_EMAIL;
+	private String ADMIN_EMAIL;
+	@Value("${admin.password}")
+	private String ADMIN_PASSWORD;
 
 	public static void main(String[] args) {
 		SpringApplication.run(UserServiceApplication.class, args);
@@ -28,7 +30,7 @@ public class UserServiceApplication {
     CommandLineRunner init(UserRepository userRepository, PasswordEncoder passwordEncoder) {
 		return args -> {
 			if (!userRepository.existsByEmail(ADMIN_EMAIL)) {
-				userRepository.save(new User(ADMIN_EMAIL, passwordEncoder.encode("admin")));
+				userRepository.save(new User(ADMIN_EMAIL, passwordEncoder.encode(ADMIN_PASSWORD)));
 			}
 		};
 	}
