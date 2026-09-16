@@ -121,7 +121,7 @@ public class TaskController {
     public void onUserEvent(String payload) {
         JsonNode jsonNode = objectMapper.readTree(payload);
         if ("USER_DELETED".equals(jsonNode.path("eventType").asText())) {
-            taskService.deleteForWorker(jsonNode.path("workerEmail").asText());
+            taskService.deleteForWorker(jsonNode.path("email").asText());
         }
     }
 
