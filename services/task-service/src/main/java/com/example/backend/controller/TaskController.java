@@ -30,14 +30,49 @@ public class TaskController {
         List<TaskResponseDTO> response = taskService.active(email)
                 .stream()
                 .map(
-                task -> TaskResponseDTO.builder()
-                        .workerEmail(task.getWorkerEmail())
-                        .text(task.getText())
-                        .id(task.getId())
-                        .status(task.getStatus().name())
-                        .createdAt(task.getCreatedAt().toString())
-                        .build()
-        ).toList();
+                        task -> TaskResponseDTO.builder()
+                                .workerEmail(task.getWorkerEmail())
+                                .text(task.getText())
+                                .id(task.getId())
+                                .status(task.getStatus().name())
+                                .createdAt(task.getCreatedAt().toString())
+                                .build()
+                ).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/completed")
+    public ResponseEntity<List<TaskResponseDTO>> completed(@RequestParam String email) {
+        List<TaskResponseDTO> response = taskService.completed(email)
+                .stream()
+                .map(
+                        task -> TaskResponseDTO.builder()
+                                .workerEmail(task.getWorkerEmail())
+                                .text(task.getText())
+                                .id(task.getId())
+                                .status(task.getStatus().name())
+                                .createdAt(task.getCreatedAt().toString())
+                                .build()
+                ).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<TaskResponseDTO>> workerTasks(@RequestParam String email) {
+        List<TaskResponseDTO> response = taskService.allWorkerTasks(email)
+                .stream()
+                .map(
+                        task -> TaskResponseDTO.builder()
+                                .workerEmail(task.getWorkerEmail())
+                                .text(task.getText())
+                                .id(task.getId())
+                                .status(task.getStatus().name())
+                                .createdAt(task.getCreatedAt().toString())
+                                .build()
+                )
+                .toList();
 
         return ResponseEntity.ok(response);
     }
@@ -58,13 +93,26 @@ public class TaskController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @DeleteMapping("/id")
-    public ResponseEntity<Void> complete(@PathVariable Long id) {
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<TaskResponseDTO> complete(@PathVariable Long id) {
         try {
             taskService.completeTask(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(
+                    TaskResponseDTO.builder()
+                            .text("Task has been completed.")
+                            .build()
+            );
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
-        catch (IllegalArgumentException e) {
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+        try {
+            taskService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
     }

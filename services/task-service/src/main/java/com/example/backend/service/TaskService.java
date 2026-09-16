@@ -22,6 +22,7 @@ public class TaskService {
 
     public Task createTask(Task task) {
         taskRepository.save(task);
+        events.publish("TASK_CREATED", task);
         return task;
     }
 
@@ -31,11 +32,30 @@ public class TaskService {
                 .toList();
     }
 
+    public List<Task> completed(String email) {
+        return taskRepository.findByWorkerEmail(email).stream()
+                .filter(task -> task.getStatus().equals(TaskStatus.COMPLETED))
+                .toList();
+    }
+
+    public List<Task> allWorkerTasks(String email) {
+        return taskRepository.findByWorkerEmail(email);
+    }
+
     public void completeTask(Long id){
         Task task = taskRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        if (task.getStatus().equals(TaskStatus.COMPLETED)){
+            throw new IllegalArgumentException("Task is already completed");
+        }
         task.complete();
         taskRepository.save(task);
         events.publish("TASK_COMPLETED", task);
+    }
+
+    public void delete(Long id) {
+        Task task = taskRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Task not found"));
+        taskRepository.delete(task);
+        events.publish("TASK_DELETED", task);
     }
 
     public void deleteForWorker(String email){
