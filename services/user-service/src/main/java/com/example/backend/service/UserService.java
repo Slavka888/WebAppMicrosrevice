@@ -1,10 +1,10 @@
 package com.example.backend.service;
 
-import com.example.backend.UserServiceApplication;
 import com.example.backend.entity.User;
 import com.example.backend.event.EventPublisher;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +15,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EventPublisher events;
+
+    @Value("${admin.email}")
+    private String adminPassword;
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, EventPublisher eventPublisher) {
@@ -38,14 +41,14 @@ public class UserService {
     public List<String> workers() {
         return userRepository.findAll().stream()
                 .map(user -> user.getEmail())
-                .filter(email -> !UserServiceApplication.ADMIN_EMAIL.equals(email))
+                .filter(email -> !adminPassword.equals(email))
                 .sorted()
                 .toList();
     }
 
     public void delete(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if (user.getEmail().equals(UserServiceApplication.ADMIN_EMAIL)) {
+        if (user.getEmail().equals(adminPassword)) {
             throw new IllegalArgumentException("Admin cannot be deleted");
         }
         userRepository.delete(user);
