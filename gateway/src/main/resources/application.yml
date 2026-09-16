@@ -3,31 +3,33 @@ spring:
     name: gateway
   cloud:
     gateway:
-      routes:
-        - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8081}
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=1
-        - id: task-service
-          uri: ${TASK_SERVICE_URL:http://localhost:8082}
-          predicates:
-            - Path=/api/tasks,/api/tasks/**
-          filters:
-            - StripPrefix=1
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: false
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: ${USER_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - StripPrefix=1
+            - id: task-service
+              uri: ${TASK_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/tasks,/api/tasks/**
+              filters:
+                - StripPrefix=1
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+                allowCredentials: false
 management:
   endpoints:
     web:
