@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styles/common.css">
     <link rel="stylesheet" href="styles/worker.css">
     <link rel="icon" href="images/logo.png">
-    <title>Кабинет рабочего</title>
+    <title>Кабинет работника</title>
 </head>
 <body class="body body--worker">
 <div class="worker">
@@ -14,21 +14,44 @@
     <div class="worker__container">
         <header class="worker__header">
             <div class="worker__header-content">
-                <h1 class="worker__title">Мой кабинет</h1>
-                <button class="worker__logout" id="logoutButton">Выход</button>
+                <div>
+                    <h1 class="worker__title">Мой кабинет</h1>
+                    <span class="worker__email" id="workerEmail"></span>
+                </div>
+                <button class="worker__logout" id="logoutButton" type="button">Выход</button>
             </div>
         </header>
+
         <main class="worker__main">
             <section class="tasks-section">
-                <h2 class="tasks-section__title">Ваши задачи</h2>
-                <div class="tasks-section__list" id="tasksList">
-                    <div class="tasks-section__empty">Нет активных задач</div>
+                <div class="tasks-section__heading">
+                    <div>
+                        <h2 class="tasks-section__title">Мои задачи</h2>
+                        <p class="tasks-section__subtitle">Выберите активную задачу и отметьте её выполненной.</p>
+                    </div>
+                    <button class="button button--outline" id="refreshButton" type="button">Обновить</button>
                 </div>
-                <button class="tasks-section__button" id="finishTaskButton">Выполнить задачу</button>
+
+                <div class="tasks-section__tabs">
+                    <button class="tasks-tab tasks-tab--active" data-tab="active" type="button">Активные</button>
+                    <button class="tasks-tab" data-tab="completed" type="button">Выполненные</button>
+                </div>
+
+                <div class="tasks-section__list" id="tasksList">
+                    <div class="tasks-section__empty">Загрузка...</div>
+                </div>
+
+                <div class="tasks-section__footer">
+                    <span id="selectionInfo">Задача не выбрана</span>
+                    <button class="tasks-section__button" id="finishTaskButton" type="button" disabled>
+                        Выполнить выбранную задачу
+                    </button>
+                </div>
             </section>
         </main>
     </div>
 </div>
+<script src="scripts/api.js"></script>
 <script src="scripts/workerScript.js"></script>
 </body>
 </html>

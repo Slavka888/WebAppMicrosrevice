@@ -1,99 +1,63 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('authorizationForm');
-    const backendUrl = 'http://localhost:8080';
+    if (!form) return;
 
-    form.addEventListener('submit', function (event) {
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', async event => {
         event.preventDefault();
-
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-
-        // Очищаем старые ошибки
         clearErrors();
 
-        // Валидация
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
         if (!email || !password) {
-            showError('emailError', 'Пожалуйста, заполните все поля');
+            showError('emailError', 'Пожалуйста, заполните все поля.');
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showError('emailError', 'Введите корректный email.');
             return;
         }
 
-        if (!isValidEmail(email)) {
-            showError('emailError', 'Пожалуйста, введите корректный email');
-            return;
-        }
+        submitButton.disabled = true;
+        try {
+            const data = await apiRequest('/api/users/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
 
-        if (password.length < 5) {
-            showError('passwordError', 'Пароль должен содержать минимум 5 символов');
-            return;
-        }
+            if (data?.role === 'ADMIN') {
+                localStorage.setItem('adminEmail', email);
+                localStorage.removeItem('userEmail');
+                window.location.href = 'admin.html';
+                return;
+            }
 
-        // Отправка на сервер
-        sendAuthRequest(email, password);
+            if (data?.role === 'USER') {
+                localStorage.setItem('userEmail', email);
+                localStorage.removeItem('adminEmail');
+                window.location.href = 'worker.html';
+                return;
+            }
+
+            showError('emailError', data?.message || 'Пользователь не найден. Зарегистрируйтесь.');
+        } catch (error) {
+            showError('emailError', error.message || 'Не удалось выполнить вход.');
+        } finally {
+            submitButton.disabled = false;
+        }
     });
 
-    function sendAuthRequest(email, password) {
-        fetch(`${backendUrl}/authorization`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errData => {
-                        throw new Error(errData.message || 'Ошибка при авторизации');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                // console.log('Успешная авторизация:', data);
-                // localStorage.setItem('userEmail', email);
-                // showSuccess('Вход выполнен успешно!');
-
-                setTimeout(() => {
-                    if (data.Role === 'IsAdmin') {
-                        console.log('Успешная авторизация:', data);
-                        localStorage.setItem('adminEmail', email);
-                        showSuccess('Вход выполнен успешно!');
-                        window.location.href = 'admin.html';
-                    } else if (data.Role === 'IsUser') {
-                        console.log('Успешная авторизация:', data);
-                        localStorage.setItem('userEmail', email);
-                        showSuccess('Вход выполнен успешно!');
-                        window.location.href = 'worker.html';
-                    } else {
-                        console.log('Необходима регистрация:', data);
-                        showSuccess('Пожалуйста, зарегистрируйтесь!');
-                        window.location.href = 'registration.html';
-                    }
-                }, 500);
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                showError('emailError', error.message || 'Произошла ошибка при авторизации');
-            });
-    }
-
-    function isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function showError(elementId, message) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
+    function showError(id, message) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = message;
     }
 
     function clearErrors() {
         document.getElementById('emailError').textContent = '';
         document.getElementById('passwordError').textContent = '';
-    }
-
-    function showSuccess(message) {
-        alert(message);
     }
 });

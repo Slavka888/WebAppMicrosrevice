@@ -17,7 +17,7 @@ public class UserService {
     private final EventPublisher events;
 
     @Value("${admin.email}")
-    private String adminPassword;
+    private String adminEmail;
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, EventPublisher eventPublisher) {
@@ -41,14 +41,14 @@ public class UserService {
     public List<String> workers() {
         return userRepository.findAll().stream()
                 .map(user -> user.getEmail())
-                .filter(email -> !adminPassword.equals(email))
+                .filter(email -> !adminEmail.equals(email))
                 .sorted()
                 .toList();
     }
 
     public void delete(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if (user.getEmail().equals(adminPassword)) {
+        if (user.getEmail().equals(adminEmail)) {
             throw new IllegalArgumentException("Admin cannot be deleted");
         }
         userRepository.delete(user);

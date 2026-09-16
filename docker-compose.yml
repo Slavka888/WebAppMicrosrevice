@@ -1,4 +1,14 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "63343:63343"
+    depends_on:
+      - user-service
+      - task-service
+    networks: [app-network]
+
   gateway:
     build:
       context: ./gateway

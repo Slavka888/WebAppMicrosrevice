@@ -14,41 +14,70 @@
     <div class="admin__container">
         <header class="admin__header">
             <div class="admin__header-content">
-                <h1 class="admin__title">Панель администратора</h1>
-                <button class="admin__logout" id="logoutButton">Выход</button>
+                <div>
+                    <h1 class="admin__title">Панель администратора</h1>
+                    <span class="admin__email" id="adminEmail"></span>
+                </div>
+                <button class="admin__logout" id="logoutButton" type="button">Выход</button>
             </div>
         </header>
+
         <main class="admin__main">
             <section class="admin__section admin__section--tasks">
-                <h2 class="admin__section-title">Создать задачу</h2>
-                <form class="task-form">
-                    <select class="task-form__select" id="workerSelect">
+                <div class="section-heading">
+                    <div>
+                        <h2 class="admin__section-title">Назначить задачу</h2>
+                        <p class="section-heading__hint">Новая задача создаётся со статусом ACTIVE.</p>
+                    </div>
+                </div>
+
+                <form class="task-form" id="taskForm">
+                    <label class="form-label" for="workerSelect">Работник</label>
+                    <select class="task-form__select" id="workerSelect" required>
                         <option value="">Выберите работника</option>
                     </select>
-                    <textarea
-                            class="task-form__textarea"
-                            id="taskInput"
-                            placeholder="Введите описание задачи..."
-                            required
-                    ></textarea>
-                    <button type="button" class="task-form__button" id="sendTaskButton">Отправить задачу</button>
+
+                    <label class="form-label" for="taskInput">Описание</label>
+                    <textarea class="task-form__textarea" id="taskInput"
+                              placeholder="Введите описание задачи..." maxlength="4000" required></textarea>
+
+                    <button type="submit" class="task-form__button" id="sendTaskButton">
+                        Создать задачу
+                    </button>
                 </form>
             </section>
 
             <section class="admin__section admin__section--workers">
-                <h2 class="admin__section-title">Управление работниками</h2>
-                <div class="workers-manage">
-                    <select class="workers-manage__select" id="workerSelectDelete">
-                        <option value="">Выберите работника</option>
-                    </select>
-                    <button class="workers-manage__button workers-manage__button--delete" id="deleteWorkerButton">
+                <div>
+                    <h2 class="admin__section-title">Работники</h2>
+                    <p class="section-heading__hint">Выберите работника для просмотра его задач.</p>
+                </div>
+
+                <select class="workers-manage__select" id="workerSelectView">
+                    <option value="">Выберите работника</option>
+                </select>
+
+                <div class="worker-actions">
+                    <button class="button button--outline" id="refreshWorkersButton" type="button">Обновить список</button>
+                    <button class="workers-manage__button workers-manage__button--delete" id="deleteWorkerButton" type="button">
                         Удалить работника
                     </button>
+                </div>
+
+                <div class="worker-tasks">
+                    <div class="worker-tasks__heading">
+                        <h3>Задачи выбранного работника</h3>
+                        <span id="workerTaskCount">—</span>
+                    </div>
+                    <div class="worker-tasks__list" id="workerTasksList">
+                        <div class="worker-tasks__empty">Выберите работника.</div>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 </div>
+<script src="scripts/api.js"></script>
 <script src="scripts/adminScript.js"></script>
 </body>
 </html>

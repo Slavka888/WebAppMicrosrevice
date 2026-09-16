@@ -1,145 +1,171 @@
-const backendUrl = 'http://localhost:8080';
 const workerSelect = document.getElementById('workerSelect');
-const workerSelectDelete = document.getElementById('workerSelectDelete');
+const workerSelectView = document.getElementById('workerSelectView');
 const taskInput = document.getElementById('taskInput');
-const sendTaskButton = document.getElementById('sendTaskButton');
+const taskForm = document.getElementById('taskForm');
 const deleteWorkerButton = document.getElementById('deleteWorkerButton');
 const logoutButton = document.getElementById('logoutButton');
+const refreshWorkersButton = document.getElementById('refreshWorkersButton');
+const workerTasksList = document.getElementById('workerTasksList');
+const workerTaskCount = document.getElementById('workerTaskCount');
 
-// Загрузка списка работников при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
+    const adminEmail = localStorage.getItem('adminEmail');
+    if (!adminEmail) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    document.getElementById('adminEmail').textContent = adminEmail;
+    taskForm.addEventListener('submit', createTask);
+    workerSelectView.addEventListener('change', loadWorkerTasks);
+    refreshWorkersButton.addEventListener('click', loadWorkers);
+    deleteWorkerButton.addEventListener('click', deleteWorker);
+    logoutButton.addEventListener('click', () => {
+        if (confirm('Выйти из аккаунта администратора?')) logout();
+    });
+
     loadWorkers();
-    setupLogout();
 });
 
 async function loadWorkers() {
     try {
-        const response = await fetch(`${backendUrl}/workers`);
-
-        if (!response.ok) {
-            throw new Error('Ошибка при загрузке списка работников');
-        }
-
-        const workers = await response.json();
+        setWorkerControlsDisabled(true);
+        const workers = await apiRequest('/api/users/workers') || [];
         populateWorkerSelects(workers);
+
+        const selected = workerSelectView.value;
+        if (selected) await loadWorkerTasks();
+        else showWorkerTasks([]);
     } catch (error) {
-        console.error('Ошибка загрузки списка работников:', error);
-        showError('Не удалось загрузить список работников');
+        console.error(error);
+        alert(error.message || 'Не удалось загрузить список работников.');
+    } finally {
+        setWorkerControlsDisabled(false);
     }
 }
 
 function populateWorkerSelects(workers) {
-    // Очищаем оба select'а
-    workerSelect.innerHTML = '<option value="">Выберите работника</option>';
-    workerSelectDelete.innerHTML = '<option value="">Выберите работника</option>';
+    [workerSelect, workerSelectView].forEach(select => {
+        const oldValue = select.value;
+        select.innerHTML = '<option value="">Выберите работника</option>';
 
-    // Добавляем работников в оба select'а
-    workers.forEach(email => {
-        // Для отправки задачи
-        const option1 = document.createElement('option');
-        option1.value = email;
-        option1.textContent = email;
-        workerSelect.appendChild(option1);
+        workers.forEach(email => {
+            const option = document.createElement('option');
+            option.value = email;
+            option.textContent = email;
+            select.appendChild(option);
+        });
 
-        // Для удаления работника
-        const option2 = document.createElement('option');
-        option2.value = email;
-        option2.textContent = email;
-        workerSelectDelete.appendChild(option2);
+        if (workers.includes(oldValue)) select.value = oldValue;
     });
 }
 
-sendTaskButton.addEventListener('click', async () => {
-    const selectedWorkerEmail = workerSelect.value;
-    const taskText = taskInput.value.trim();
+async function createTask(event) {
+    event.preventDefault();
 
-    // Валидация
-    if (!selectedWorkerEmail) {
-        showError('Пожалуйста, выберите работника');
+    const email = workerSelect.value;
+    const text = taskInput.value.trim();
+
+    if (!email) {
+        alert('Выберите работника.');
+        return;
+    }
+    if (!text) {
+        alert('Введите описание задачи.');
         return;
     }
 
-    if (!taskText) {
-        showError('Пожалуйста, введите текст задачи');
-        return;
-    }
+    const button = document.getElementById('sendTaskButton');
+    button.disabled = true;
 
     try {
-        const response = await fetch(`${backendUrl}/tasks`, {
+        await apiRequest('/api/tasks', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                workerEmail: selectedWorkerEmail,
-                taskText: taskText
-            })
+            body: JSON.stringify({ email, text })
         });
 
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
-        }
-
-        showSuccess('Задача успешно отправлена!');
+        alert('Задача успешно создана.');
         taskInput.value = '';
+
+        if (workerSelectView.value === email) await loadWorkerTasks();
     } catch (error) {
-        console.error('Ошибка при отправке задачи:', error);
-        showError('Ошибка при отправке задачи');
+        alert(error.message || 'Не удалось создать задачу.');
+    } finally {
+        button.disabled = false;
     }
-});
+}
 
-deleteWorkerButton.addEventListener('click', async () => {
-    const selectedWorkerEmail = workerSelectDelete.value;
-
-    // Валидация
-    if (!selectedWorkerEmail) {
-        showError('Пожалуйста, выберите работника для удаления');
+async function loadWorkerTasks() {
+    const email = workerSelectView.value;
+    if (!email) {
+        showWorkerTasks([]);
         return;
     }
 
-    // Подтверждение удаления
-    if (!confirm(`Вы уверены, что хотите удалить работника ${selectedWorkerEmail}?`)) {
-        return;
-    }
-
+    workerTasksList.innerHTML = '<div class="worker-tasks__empty">Загрузка...</div>';
     try {
-        const response = await fetch(`${backendUrl}/delete`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                workerEmail: selectedWorkerEmail
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
-        }
-
-        showSuccess('Работник успешно удален!');
-        await loadWorkers(); // Обновляем список работников
+        const tasks = await apiRequest(`/api/tasks/admin?email=${encodeURIComponent(email)}`) || [];
+        showWorkerTasks(tasks);
     } catch (error) {
-        console.error('Ошибка при удалении работника:', error);
-        showError('Ошибка при удалении работника');
+        console.error(error);
+        workerTasksList.innerHTML = `<div class="worker-tasks__empty">${escapeHtml(error.message || 'Не удалось загрузить задачи.')}</div>`;
+        workerTaskCount.textContent = '—';
     }
-});
+}
 
-function setupLogout() {
-    if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                localStorage.removeItem('userEmail');
-                window.location.href = 'index.html';
-            }
+function showWorkerTasks(tasks) {
+    workerTaskCount.textContent = `${tasks.length} ${tasks.length === 1 ? 'задача' : 'задач'}`;
+
+    if (!tasks.length) {
+        workerTasksList.innerHTML = '<div class="worker-tasks__empty">У этого работника нет задач.</div>';
+        return;
+    }
+
+    workerTasksList.innerHTML = '';
+    tasks.forEach(task => {
+        const item = document.createElement('article');
+        item.className = `worker-task worker-task--${String(task.status || '').toLowerCase()}`;
+        item.innerHTML = `
+            <div class="worker-task__top">
+                <strong>#${escapeHtml(task.id)}</strong>
+                <span>${escapeHtml(task.status || '—')}</span>
+            </div>
+            <p>${escapeHtml(task.text)}</p>
+            <small>${escapeHtml(formatDate(task.createdAt))}</small>
+        `;
+        workerTasksList.appendChild(item);
+    });
+}
+
+async function deleteWorker() {
+    const email = workerSelectView.value;
+    if (!email) {
+        alert('Выберите работника.');
+        return;
+    }
+
+    if (!confirm(`Удалить работника ${email}? Все его задачи также будут удалены через событие USER_DELETED.`)) {
+        return;
+    }
+
+    deleteWorkerButton.disabled = true;
+    try {
+        await apiRequest('/api/users', {
+            method: 'DELETE',
+            body: JSON.stringify({ email, password: '' })
         });
+
+        alert('Работник удалён.');
+        await loadWorkers();
+    } catch (error) {
+        alert(error.message || 'Не удалось удалить работника.');
+    } finally {
+        deleteWorkerButton.disabled = false;
     }
 }
 
-function showError(message) {
-    alert(`${message}`);
-}
-
-function showSuccess(message) {
-    alert(`${message}`);
+function setWorkerControlsDisabled(disabled) {
+    workerSelect.disabled = disabled;
+    workerSelectView.disabled = disabled;
+    refreshWorkersButton.disabled = disabled;
 }

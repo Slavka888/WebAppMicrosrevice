@@ -1,84 +1,55 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('registrationForm');
-    const backendUrl = 'http://localhost:8080';
+    if (!form) return;
 
-    form.addEventListener('submit', function (event) {
+    form.addEventListener('submit', async event => {
         event.preventDefault();
+        clearErrors();
 
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
+        const button = form.querySelector('button[type="submit"]');
 
-        // Очищаем старые ошибки
-        clearErrors();
-
-        // Валидация
         if (!email || !password) {
-            showError('emailError', 'Пожалуйста, заполните все поля');
+            showError('emailError', 'Пожалуйста, заполните все поля.');
             return;
         }
-
-        if (!isValidEmail(email)) {
-            showError('emailError', 'Пожалуйста, введите корректный email');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showError('emailError', 'Введите корректный email.');
             return;
         }
-
         if (password.length < 5) {
-            showError('passwordError', 'Пароль должен содержать минимум 5 символов');
+            showError('passwordError', 'Пароль должен содержать минимум 5 символов.');
             return;
         }
 
-        // Отправка на сервер
-        sendRegistrationRequest(email, password);
+        button.disabled = true;
+        try {
+            const data = await apiRequest('/api/users/register', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (data?.message && !/successfully|успеш/i.test(data.message)) {
+                throw new Error(data.message);
+            }
+
+            alert('Регистрация выполнена успешно. Теперь войдите в систему.');
+            window.location.href = 'index.html';
+        } catch (error) {
+            showError('emailError', error.message || 'Не удалось зарегистрировать пользователя.');
+        } finally {
+            button.disabled = false;
+        }
     });
 
-    function sendRegistrationRequest(email, password) {
-        fetch(`${backendUrl}/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errData => {
-                        throw new Error(errData.message || 'Ошибка при регистрации');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Успешная регистрация:', data);
-                showSuccess('Регистрация выполнена успешно! Перенаправление на страницу входа...');
-
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                showError('emailError', error.message || 'Произошла ошибка при регистрации');
-            });
-    }
-
-    function isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function showError(elementId, message) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
+    function showError(id, message) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = message;
     }
 
     function clearErrors() {
         document.getElementById('emailError').textContent = '';
         document.getElementById('passwordError').textContent = '';
-    }
-
-    function showSuccess(message) {
-        alert(message);
     }
 });

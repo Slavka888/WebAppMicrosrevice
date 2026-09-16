@@ -1,12 +1,16 @@
 {
   "name": "frontforproject",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Frontend for task management system",
   "main": "index.html",
   "scripts": {
     "start": "http-server -c-1 --cors -p 63343 -o"
   },
-  "keywords": ["task", "management", "frontend"],
+  "keywords": [
+    "task",
+    "management",
+    "frontend"
+  ],
   "author": "",
   "license": "ISC"
 }

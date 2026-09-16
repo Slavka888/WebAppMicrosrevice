@@ -1,140 +1,121 @@
-const backendUrl = 'http://localhost:8080';
 const tasksList = document.getElementById('tasksList');
 const finishTaskButton = document.getElementById('finishTaskButton');
 const logoutButton = document.getElementById('logoutButton');
+const refreshButton = document.getElementById('refreshButton');
+const selectionInfo = document.getElementById('selectionInfo');
+const workerEmailElement = document.getElementById('workerEmail');
 
 let tasks = [];
-let selectedTaskIndex = -1;
+let selectedTaskId = null;
+let currentTab = 'active';
 
-// Загрузка задач при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    const userEmail = localStorage.getItem('userEmail');
-
-    if (!userEmail) {
+    const email = localStorage.getItem('userEmail');
+    if (!email) {
         window.location.href = 'index.html';
         return;
     }
 
-    loadTasks(userEmail);
-    setupLogout();
+    workerEmailElement.textContent = email;
+    logoutButton.addEventListener('click', () => {
+        if (confirm('Выйти из аккаунта?')) logout();
+    });
+    refreshButton.addEventListener('click', loadCurrentTasks);
 
-    // Обновляем задачи каждые 5 секунд
-    setInterval(() => loadTasks(userEmail), 5000);
+    document.querySelectorAll('.tasks-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            currentTab = tab.dataset.tab;
+            document.querySelectorAll('.tasks-tab').forEach(item => item.classList.remove('tasks-tab--active'));
+            tab.classList.add('tasks-tab--active');
+            selectedTaskId = null;
+            updateSelection();
+            loadCurrentTasks();
+        });
+    });
+
+    finishTaskButton.addEventListener('click', completeSelectedTask);
+    loadCurrentTasks();
+
+    setInterval(() => {
+        if (document.visibilityState === 'visible') loadCurrentTasks();
+    }, 10000);
 });
 
-async function loadTasks(userEmail) {
+async function loadCurrentTasks() {
+    const email = localStorage.getItem('userEmail');
+    if (!email) return;
+
+    tasksList.innerHTML = '<div class="tasks-section__empty">Загрузка...</div>';
+
     try {
-        const response = await fetch(`${backendUrl}/getTasks?email=${userEmail}`);
+        const endpoint = currentTab === 'completed'
+            ? `/api/tasks/completed?email=${encodeURIComponent(email)}`
+            : `/api/tasks?email=${encodeURIComponent(email)}`;
 
-        if (!response.ok) {
-            throw new Error('Ошибка при загрузке задач');
-        }
-
-        let data = await response.json();
-        tasks = [data.task];
+        tasks = await apiRequest(endpoint) || [];
+        selectedTaskId = null;
         renderTasks();
-        selectedTaskIndex = -1;
+        updateSelection();
     } catch (error) {
-        console.error('Ошибка загрузки задач:', error);
-        showTasksEmpty();
+        console.error(error);
+        tasksList.innerHTML = `<div class="tasks-section__empty">${escapeHtml(error.message || 'Не удалось загрузить задачи.')}</div>`;
     }
 }
 
 function renderTasks() {
     tasksList.innerHTML = '';
 
-    if (tasks.length === 0) {
-        showTasksEmpty();
+    if (!tasks.length) {
+        tasksList.innerHTML = `<div class="tasks-section__empty">${
+            currentTab === 'completed' ? 'Выполненных задач пока нет.' : 'Активных задач нет.'
+        }</div>`;
         return;
     }
 
-    tasks.forEach((task, index) => {
-        const taskCard = createTaskCard(task, index);
-        tasksList.appendChild(taskCard);
-    });
-}
+    tasks.forEach(task => {
+        const card = document.createElement('article');
+        card.className = 'task-card';
+        card.dataset.id = task.id;
+        card.innerHTML = `
+            <div class="task-card__top">
+                <span class="task-card__status">${escapeHtml(task.status || currentTab.toUpperCase())}</span>
+                <span class="task-card__date">${escapeHtml(formatDate(task.createdAt))}</span>
+            </div>
+            <p class="task-card__text">${escapeHtml(task.text)}</p>
+            ${task.id != null ? `<span class="task-card__id">#${escapeHtml(task.id)}</span>` : ''}
+        `;
 
-function createTaskCard(task, index) {
-    const card = document.createElement('div');
-    card.className = 'task-card';
-    card.innerHTML = `<p class="task-card__text">${escapeHtml(task)}</p>`;
+        if (task.id === selectedTaskId) card.classList.add('task-card--selected');
 
-    card.addEventListener('click', () => {
-        // Убираем выделение со всех карточек
-        document.querySelectorAll('.task-card').forEach(c => {
-            c.classList.remove('task-card--selected');
-        });
-
-        // Добавляем выделение текущей карточке
-        card.classList.add('task-card--selected');
-        selectedTaskIndex = index;
-    });
-
-    return card;
-}
-
-function showTasksEmpty() {
-    tasksList.innerHTML = '<div class="tasks-section__empty">Нет активных задач</div>';
-}
-
-finishTaskButton.addEventListener('click', async () => {
-    if (selectedTaskIndex === -1) {
-        showError('Пожалуйста, выберите задачу для выполнения');
-        return;
-    }
-
-    const userEmail = localStorage.getItem('userEmail');
-    const taskText = tasks[selectedTaskIndex];
-
-    try {
-        const response = await fetch(`${backendUrl}/deleteTasks?email=${userEmail}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                taskText: taskText
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
+        if (currentTab === 'active') {
+            card.addEventListener('click', () => {
+                selectedTaskId = task.id;
+                document.querySelectorAll('.task-card').forEach(item => item.classList.remove('task-card--selected'));
+                card.classList.add('task-card--selected');
+                updateSelection();
+            });
         }
 
-        showSuccess('Задача отмечена как выполненная!');
-        await loadTasks(userEmail);
+        tasksList.appendChild(card);
+    });
+}
+
+function updateSelection() {
+    const selected = tasks.find(task => task.id === selectedTaskId);
+    finishTaskButton.disabled = !selected || currentTab !== 'active';
+    selectionInfo.textContent = selected ? `Выбрана задача #${selected.id}` : 'Задача не выбрана';
+}
+
+async function completeSelectedTask() {
+    if (selectedTaskId == null) return;
+
+    finishTaskButton.disabled = true;
+    try {
+        await apiRequest(`/api/tasks/${encodeURIComponent(selectedTaskId)}/complete`, { method: 'PUT' });
+        alert('Задача отмечена как выполненная.');
+        await loadCurrentTasks();
     } catch (error) {
-        console.error('Ошибка при завершении задачи:', error);
-        showError('Ошибка при завершении задачи');
+        alert(error.message || 'Не удалось завершить задачу.');
+        updateSelection();
     }
-});
-
-function setupLogout() {
-    if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                localStorage.removeItem('userEmail');
-                window.location.href = 'index.html';
-            }
-        });
-    }
-}
-
-function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, m => map[m]);
-}
-
-function showError(message) {
-    alert(`${message}`);
-}
-
-function showSuccess(message) {
-    alert(`${message}`);
 }
