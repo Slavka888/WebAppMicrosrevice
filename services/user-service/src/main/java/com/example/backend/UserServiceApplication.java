@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @SpringBootApplication
 public class UserServiceApplication {
 	@Value("${admin.email}")
-	public static String ADMIN_EMAIL;
+	public String ADMIN_EMAIL;
 
 	public static void main(String[] args) {
 		SpringApplication.run(UserServiceApplication.class, args);
